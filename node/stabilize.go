@@ -12,6 +12,7 @@ func (node *Node) stabilize() {
 	indexOfFirstLiveSuccessor, err := node.findFirstLiveSuccessor()
 	if err != nil {
 		node.Close()
+		return
 	}
 	// update the successor list and backup files
 	_ = node.updateReplica(indexOfFirstLiveSuccessor)
