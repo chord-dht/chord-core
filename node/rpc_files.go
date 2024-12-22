@@ -1,7 +1,6 @@
 package node
 
 import (
-	"chord/log"
 	"chord/storage"
 )
 
@@ -23,8 +22,6 @@ func (nodeInfo *NodeInfo) StoreFile(filename string, fileContent []byte) (*Store
 
 // StoreFileRPC : Store the file in the node's storage
 func (handler *RPCHandler) StoreFileRPC(args *StoreFileArgs, reply *StoreFileReply) error {
-	defer log.LogFunction()()
-
 	file := args.File
 
 	err := localNode.StoreFile(file.Key, file.Value)
@@ -49,8 +46,6 @@ func (nodeInfo *NodeInfo) GetFile(filename string) (*GetFileReply, error) {
 
 // GetFileRPC : Get the file from the node
 func (handler *RPCHandler) GetFileRPC(args *GetFileArgs, reply *GetFileReply) error {
-	defer log.LogFunction()()
-
 	fileContent, err := localNode.GetFile(args.Filename)
 	if err != nil {
 		reply.Success = false
@@ -76,14 +71,10 @@ func (nodeInfo *NodeInfo) GetAllFiles() (*GetFileListReply, error) {
 // GetAllFilesRPC : Get the files from the node
 // Point to note: ONLY StorageDir
 func (handler *RPCHandler) GetAllFilesRPC(args *Empty, reply *GetFileListReply) error {
-	defer log.LogFunction()()
-
 	if fileList, err := localNode.GetAllFiles(); err != nil {
-		log.Error("GetAllFiles() failed: %v", err)
 		reply.Success = false
 		reply.FileList = nil
 	} else {
-		log.Info("Read file list successfully")
 		reply.Success = true
 		reply.FileList = fileList
 	}
@@ -99,14 +90,10 @@ func (nodeInfo *NodeInfo) GetAllBackupFiles() (*GetFileListsReply, error) {
 
 // GetAllBackupFilesRPC : Get the backup file lists from the node
 func (handler *RPCHandler) GetAllBackupFilesRPC(args *Empty, reply *GetFileListsReply) error {
-	defer log.LogFunction()()
-
 	if fileLists, err := localNode.GetAllBackupFiles(); err != nil {
-		log.Error("GetAllBackupFiles() failed: %v", err)
 		reply.Success = false
 		reply.FileLists = nil
 	} else {
-		log.Info("Read backup file lists successfully")
 		reply.Success = true
 		reply.FileLists = fileLists
 	}
@@ -129,13 +116,9 @@ func (nodeInfo *NodeInfo) StoreFiles(fileList storage.FileList) (*StoreFileListR
 
 // StoreFilesRPC : Store the file list on the node's storage
 func (handler *RPCHandler) StoreFilesRPC(args *StoreFileListArgs, reply *StoreFileListReply) error {
-	defer log.LogFunction()()
-
 	if err := localNode.StoreFiles(args.FileList); err != nil {
-		log.Error("StoreFiles failed: %v", err)
 		reply.Success = false
 	} else {
-		log.Info("Store files successfully")
 		reply.Success = true
 	}
 	return nil

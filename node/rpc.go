@@ -1,7 +1,6 @@
 package node
 
 import (
-	"chord/log"
 	"crypto/tls"
 	"fmt"
 	"net"
@@ -22,9 +21,6 @@ const RPCHandlerPrefix = "RPCHandler."
 //  2. isten on the port specified in the node's Info.
 //  3. serve RPC requests in a separate goroutine.
 func (node *Node) startServer() {
-	log.Logger.Print(log.CenterTitle("Listen port and RPC server", "="))
-	defer log.Logger.Print(log.CenterTitle("Listen port and RPC server", "="))
-
 	handler := new(RPCHandler)
 	if err := rpc.Register(handler); err != nil {
 		fmt.Println("Failed to register RPC server:", err)
@@ -48,7 +44,6 @@ func (node *Node) startServer() {
 		for {
 			conn, err := listener.Accept()
 			if err != nil {
-				log.Info("Failed to accept connection: %v", err)
 				continue
 			}
 			go rpc.ServeConn(conn)
@@ -69,19 +64,16 @@ func (nodeInfo *NodeInfo) callRPC(method string, args interface{}, reply interfa
 		conn, err = net.Dial("tcp", address)
 	}
 	if err != nil {
-		log.Error("Dialing %s failed: %v", address, err)
 		return err
 	}
 
 	client := rpc.NewClient(conn)
 	defer func() {
 		if err := client.Close(); err != nil {
-			log.Error("Error closing RPC client: %v", err)
 		}
 	}()
 
 	if err := client.Call(rpcMethod, args, reply); err != nil {
-		log.Error("Error in RPC call: %v", rpcMethod, err)
 		return err
 	}
 	return nil

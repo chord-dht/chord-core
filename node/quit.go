@@ -1,14 +1,11 @@
 package node
 
 import (
-	"chord/log"
 	"os"
 )
 
 // Quit the node and do some cleaning work
 func (node *Node) Quit() {
-	defer log.LogFunction()()
-
 	// 1. stop the periodical tasks by closing the shutdown channel
 	node.Close()
 	// 2. notify the predecessor and successor
@@ -29,8 +26,6 @@ func (node *Node) Close() {
 // Notify the node's predecessor and successor it is leaving the ring.
 // Only invoked by the quit function, and should close the listener before calling this function.
 func (node *Node) notifyLeave() {
-	defer log.LogFunction()()
-
 	// The method below don't have return value
 	// notify the predecessor to update its successor list
 	node.GetPredecessor().NotifyPredecessor()
@@ -52,7 +47,6 @@ func (node *Node) NotifyPredecessorLeave(predecessor *NodeInfo) {
 
 	// and we need to check the predecessor
 	if err := predecessor.LiveCheck(); err != nil {
-		log.Info("NotifyPredecessorLeaveRPC's arg predecessor: %v, do nothing", err)
 		return
 	}
 
@@ -71,7 +65,6 @@ func (nodeInfo *NodeInfo) NotifyPredecessor() {
 
 // NotifySuccessorLeaveRPC : Notify the node that its successor is leaving
 func (handler *RPCHandler) NotifySuccessorLeaveRPC(args *Empty, reply *Empty) error {
-	defer log.LogFunction()()
 	// Empty reply, don't need the caller to wait for the reply,
 	// so we can use the asyncHandleRPC function to handle the RPC logic
 	asyncHandleRPC(func() {
@@ -90,7 +83,6 @@ func (nodeInfo *NodeInfo) NotifySuccessor(predecessor *NodeInfo) {
 
 // NotifyPredecessorLeaveRPC : Notify the node that its predecessor is leaving
 func (handler *RPCHandler) NotifyPredecessorLeaveRPC(predecessor *NodeInfo, reply *Empty) error {
-	defer log.LogFunction()()
 	asyncHandleRPC(func() {
 		localNode.NotifyPredecessorLeave(predecessor)
 	})

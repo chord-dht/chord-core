@@ -1,7 +1,6 @@
 package node
 
 import (
-	"chord/log"
 	"fmt"
 	"os"
 	"time"
@@ -9,8 +8,6 @@ import (
 
 // Initialize begins the node, create or join
 func (node *Node) Initialize(mode, joinAddress, joinPort string) {
-	defer log.LogFunction()()
-
 	switch mode {
 	case "create":
 		node.create()
@@ -29,13 +26,10 @@ func (node *Node) Initialize(mode, joinAddress, joinPort string) {
 
 // Create a new ring.
 func (node *Node) create() {
-	defer log.LogFunction()()
-
 	// predecessor = nil
 	// successor = node itself
 
 	node.SetFirstSuccessor(&node.info)
-	log.Info("node.Successors[0]: %v", node.info)
 }
 
 func (node *Node) joinRing(joinAddress, joinPort string) {
@@ -43,7 +37,6 @@ func (node *Node) joinRing(joinAddress, joinPort string) {
 	joinNode := NewNodeInfoWithAddress(joinAddress, joinPort)
 	joinNode, err := joinNode.GetNodeInfo()
 	if err != nil {
-		log.Error("Try to get join node Info failed, error: %v", err)
 		fmt.Printf("Try to get join node Info failed, error: %v\n", err)
 		os.Exit(1)
 	}
@@ -52,19 +45,16 @@ func (node *Node) joinRing(joinAddress, joinPort string) {
 	// Otherwise, the join operation will fail
 	reply, err := joinNode.GetLength()
 	if err != nil {
-		log.Error("Try to get join node length failed, error: %v", err)
 		fmt.Printf("Try to get join node length failed, error: %v\n", err)
 		os.Exit(1)
 	}
 	if reply.IdentifierLength != node.identifierLength || reply.SuccessorsLength != node.successorsLength {
-		log.Error("The join node has different IdentifierLength or SuccessorsLength")
 		fmt.Printf("The join node has different IdentifierLength or SuccessorsLength\n")
 		os.Exit(1)
 	}
 
 	// join the chord ring
 	if err := node.join(joinNode); err != nil {
-		log.Error("Join Chord Ring failed, error: %v", err)
 		fmt.Printf("Join Chord Ring failed, error: %v\n", err)
 		os.Exit(1)
 	}
@@ -72,24 +62,17 @@ func (node *Node) joinRing(joinAddress, joinPort string) {
 
 // Join an existing Chord ring containing node n' (joinNode).
 func (node *Node) join(joinNode *NodeInfo) error {
-	defer log.LogFunction()()
-
-	log.Info("%v.join(%v)", node.info, joinNode)
-
 	// predecessor = nil
 	// successor = n'.find_successor(n)
 	nodeInfo, err := joinNode.FindSuccessorIter(node.info.Identifier)
 	if err != nil {
-		log.Info("%v.find_successor(%v) failed, error: %v", joinNode, node.info, err)
 		return fmt.Errorf("%v.find_successor(%v) failed, error: %v", joinNode, node.info, err)
 	}
 	if err := nodeInfo.LiveCheck(); err != nil {
-		log.Info("%v.find_successor(%v) has bad result: %v", joinNode, node.info, err)
 		return fmt.Errorf("%v.find_successor(%v) has bad result: %v", joinNode, node.info, err)
 	}
 
 	node.SetFirstSuccessor(nodeInfo)
-	log.Info("Successfully join! Its successor is %v", nodeInfo)
 	return nil
 }
 
