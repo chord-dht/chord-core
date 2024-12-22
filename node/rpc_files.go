@@ -4,6 +4,61 @@ import (
 	"github.com/chord-dht/chord-core/storage"
 )
 
+/*                             single file part                             */
+
+// StoreFile is a wrap of StoreFileRPC method
+func (nodeInfo *NodeInfo) StoreFile(filename string, fileContent []byte) (*StoreFileReply, error) {
+	file := storage.File{
+		Key:   filename,
+		Value: fileContent,
+	}
+	args := &StoreFileArgs{
+		File: file,
+	}
+	reply := &StoreFileReply{}
+	err := nodeInfo.callRPC("StoreFileRPC", args, reply)
+	return reply, err
+}
+
+// StoreFileRPC : Store the file in the node's storage
+func (handler *RPCHandler) StoreFileRPC(args *StoreFileArgs, reply *StoreFileReply) error {
+	file := args.File
+
+	err := localNode.StoreFile(file.Key, file.Value)
+	if err != nil {
+		reply.Success = false
+	} else {
+		reply.Success = true
+	}
+	return nil
+}
+
+// GetFile is a wrap of GetFileRPC method
+// get the file from the node (nodeInfo)
+func (nodeInfo *NodeInfo) GetFile(filename string) (*GetFileReply, error) {
+	args := &GetFileArgs{
+		Filename: filename,
+	}
+	reply := &GetFileReply{}
+	err := nodeInfo.callRPC("GetFileRPC", args, reply)
+	return reply, err
+}
+
+// GetFileRPC : Get the file from the node
+func (handler *RPCHandler) GetFileRPC(args *GetFileArgs, reply *GetFileReply) error {
+	fileContent, err := localNode.GetFile(args.Filename)
+	if err != nil {
+		reply.Success = false
+		reply.FileContent = nil
+	} else {
+		reply.Success = true
+		reply.FileContent = fileContent
+	}
+	return nil
+}
+
+/*                             single file part                             */
+
 /*                             multiple files part                             */
 
 // GetAllFiles is a wrap of GetAllFilesRPC method
