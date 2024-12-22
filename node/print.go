@@ -2,9 +2,34 @@ package node
 
 import (
 	"fmt"
+	"math/big"
 
 	"github.com/chord-dht/chord-core/tools"
 )
+
+type NodeState struct {
+	info        NodeInfo
+	predecessor *NodeInfo
+	successors  NodeInfoList
+	fingerTable NodeInfoList
+	fingerIndex []*big.Int
+
+	localStorageName   []string
+	backupStoragesName [][]string
+}
+
+func (node *Node) GetState() *NodeState {
+	return &NodeState{
+		info:        node.info,
+		predecessor: node.GetPredecessor(),
+		successors:  node.GetSuccessors(),
+		fingerTable: node.fingerTable,
+		fingerIndex: node.fingerIndex,
+
+		localStorageName:   node.GetFilesName(),
+		backupStoragesName: node.GetAllBackupFilesName(),
+	}
+}
 
 // Print the node information.
 // If the node information is empty, print "Empty".

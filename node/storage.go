@@ -63,6 +63,15 @@ func (node *Node) ExtractFilesByFilter(filter func(string) bool) (storage.FileLi
 
 /*                             Used for backupStorages                             */
 
+// GetAllBackupFilesName gets backup files' name from all backup storages.
+func (node *Node) GetAllBackupFilesName() [][]string {
+	filesNames := make([][]string, node.successorsLength)
+	for i := 0; i < node.successorsLength; i++ {
+		filesNames[i] = node.GetBackupFilesName(i)
+	}
+	return filesNames
+}
+
 // GetBackupFilesName gets backup files' name from one of the backup storages.
 func (node *Node) GetBackupFilesName(index int) []string {
 	return node.backupStorages[index].GetFilesName()
