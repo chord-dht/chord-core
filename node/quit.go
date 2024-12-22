@@ -13,7 +13,12 @@ func (node *Node) Quit() {
 
 // stop the periodical tasks by closing the shutdown channel
 func (node *Node) Close() {
-	close(node.shutdownCh)
+	select {
+	case <-node.shutdownCh:
+		// channel already closed, do nothing
+	default:
+		close(node.shutdownCh)
+	}
 }
 
 // Notify the node's predecessor and successor it is leaving the ring.
@@ -33,6 +38,7 @@ func (node *Node) NotifySuccessorLeave() {
 	indexOfFirstLiveSuccessor, err := node.findFirstLiveSuccessor()
 	if err != nil {
 		node.Close()
+		return
 	}
 	_ = node.updateReplica(indexOfFirstLiveSuccessor)
 }
