@@ -26,12 +26,6 @@ type FindSuccessorReply struct {
 
 /*                             store part                             */
 
-type StoreFileArgs struct {
-	File storage.File
-}
-
-type StoreFileReply = BoolReply
-
 type StoreFileListArgs struct {
 	FileList storage.FileList
 }
@@ -41,15 +35,6 @@ type StoreFileListReply = BoolReply
 /*                             store part                             */
 
 /*                             get part                             */
-
-type GetFileArgs struct {
-	Filename string
-}
-
-type GetFileReply struct {
-	Success     bool
-	FileContent []byte
-}
 
 type GetFileListReply struct {
 	Success  bool
