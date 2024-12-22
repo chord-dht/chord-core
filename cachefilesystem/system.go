@@ -1,13 +1,14 @@
 package storage
 
 import (
-	"chord/storage"
 	"container/list"
 	"fmt"
 	"io"
 	"os"
 	"path/filepath"
 	"sync"
+
+	"github.com/chord-dht/chord-core/storage"
 )
 
 // CacheStorageSystem represents a storage system with caching and disk persistence.

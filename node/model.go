@@ -1,10 +1,10 @@
 package node
 
 import (
-	"chord/storage"
-	"chord/tools"
 	"crypto/tls"
 	"fmt"
+	"github.com/chord-dht/chord-core/storage"
+	"github.com/chord-dht/chord-core/tools"
 	"math/big"
 	"path/filepath"
 	"strconv"

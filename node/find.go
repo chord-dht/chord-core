@@ -1,9 +1,10 @@
 package node
 
 import (
-	"chord/tools"
 	"fmt"
 	"math/big"
+
+	"github.com/chord-dht/chord-core/tools"
 )
 
 // maxSteps variable, used in findSuccessorIter (find_successor).

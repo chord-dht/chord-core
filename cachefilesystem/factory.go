@@ -1,8 +1,9 @@
 package storage
 
 import (
-	"chord/storage"
 	"fmt"
+
+	"github.com/chord-dht/chord-core/storage"
 )
 
 // CacheStorageFactory is the default implementation of StorageFactory using NewStorage.

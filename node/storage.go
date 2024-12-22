@@ -1,8 +1,9 @@
 package node
 
 import (
-	"chord/storage"
 	"fmt"
+
+	"github.com/chord-dht/chord-core/storage"
 )
 
 /*

@@ -1,7 +1,7 @@
 package node
 
 import (
-	"chord/tools"
+	"github.com/chord-dht/chord-core/tools"
 )
 
 var next = 0

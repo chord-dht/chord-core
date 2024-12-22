@@ -2,10 +2,11 @@ package storage
 
 import (
 	"bytes"
-	"chord/storage"
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/chord-dht/chord-core/storage"
 )
 
 func setupTestStorageSystem(t *testing.T) *CacheStorageSystem {

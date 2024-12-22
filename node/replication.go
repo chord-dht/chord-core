@@ -1,9 +1,10 @@
 package node
 
 import (
-	"chord/storage"
-	"chord/tools"
 	"fmt"
+
+	"github.com/chord-dht/chord-core/storage"
+	"github.com/chord-dht/chord-core/tools"
 )
 
 // All r successors would have to simultaneously fail in order to disrupt the Chord ring,

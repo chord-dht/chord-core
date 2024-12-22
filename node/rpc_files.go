@@ -1,7 +1,7 @@
 package node
 
 import (
-	"chord/storage"
+	"github.com/chord-dht/chord-core/storage"
 )
 
 /*                             multiple files part                             */
