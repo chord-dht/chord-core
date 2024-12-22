@@ -3,13 +3,14 @@ package node
 import (
 	"crypto/tls"
 	"fmt"
-	"github.com/chord-dht/chord-core/storage"
-	"github.com/chord-dht/chord-core/tools"
 	"math/big"
 	"path/filepath"
 	"strconv"
 	"sync"
 	"time"
+
+	"github.com/chord-dht/chord-core/storage"
+	"github.com/chord-dht/chord-core/tools"
 )
 
 /*                             NodeInfo Part                             */
@@ -86,7 +87,6 @@ func NewNode(
 	successorsLength int,
 	ipAddress string,
 	port string,
-	identifier *big.Int,
 	storageFactory func(string) (storage.Storage, error),
 	storagePath string,
 	backupPath string,
@@ -99,6 +99,9 @@ func NewNode(
 ) (*Node, error) {
 	// you have to set the identifier length for the tools package first
 	tools.SetIdentifierLength(identifierLength)
+
+	networkAddress := ipAddress + ":" + port
+	identifier := tools.GenerateIdentifier(networkAddress)
 
 	nodeInfo := NodeInfo{
 		Identifier: identifier,
