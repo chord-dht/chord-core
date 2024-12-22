@@ -2,26 +2,29 @@ package node
 
 import (
 	"fmt"
-	"os"
 	"time"
 )
 
 // Initialize begins the node, create or join
-func (node *Node) Initialize(mode, joinAddress, joinPort string) {
+func (node *Node) Initialize(mode, joinAddress, joinPort string) error {
 	switch mode {
 	case "create":
 		node.create()
-		fmt.Println("Create Chord Ring success")
 	case "join":
-		node.joinRing(joinAddress, joinPort)
-		fmt.Println("Join Chord Ring success")
+		if err := node.joinRing(joinAddress, joinPort); err != nil {
+			return fmt.Errorf("joinRing failed, error: %v", err)
+		}
 	}
 
 	// register it in rpc and start the server
-	node.startServer()
+	if err := node.startServer(); err != nil {
+		return fmt.Errorf("startServer failed, error: %v", err)
+	}
 
 	// start the periodic tasks
 	node.StartPeriodicTasks()
+
+	return nil
 }
 
 // Create a new ring.
@@ -31,32 +34,30 @@ func (node *Node) create() {
 	node.SetFirstSuccessor(&node.info)
 }
 
-func (node *Node) joinRing(joinAddress, joinPort string) {
+func (node *Node) joinRing(joinAddress, joinPort string) error {
 	// get full Info of join node
 	joinNode := NewNodeInfoWithAddress(joinAddress, joinPort)
 	joinNode, err := joinNode.GetNodeInfo()
 	if err != nil {
-		fmt.Printf("Try to get join node Info failed, error: %v\n", err)
-		os.Exit(1)
+		return fmt.Errorf("try to get join node Info failed, error: %v", err)
 	}
 
 	// They should have the same IdentifierLength and SuccessorsLength
 	// Otherwise, the join operation will fail
 	reply, err := joinNode.GetLength()
 	if err != nil {
-		fmt.Printf("Try to get join node length failed, error: %v\n", err)
-		os.Exit(1)
+		return fmt.Errorf("try to get join node length failed, error: %v", err)
 	}
 	if reply.IdentifierLength != node.identifierLength || reply.SuccessorsLength != node.successorsLength {
-		fmt.Printf("The join node has different IdentifierLength or SuccessorsLength\n")
-		os.Exit(1)
+		return fmt.Errorf("the join node has different IdentifierLength or SuccessorsLength")
 	}
 
 	// join the chord ring
 	if err := node.join(joinNode); err != nil {
-		fmt.Printf("Join Chord Ring failed, error: %v\n", err)
-		os.Exit(1)
+		return fmt.Errorf("join Chord Ring failed, error: %v", err)
 	}
+
+	return nil
 }
 
 // Join an existing Chord ring containing node n' (joinNode).
@@ -80,7 +81,6 @@ func (node *Node) StartPeriodicTasks() {
 	go node.periodicFixFingers(node.fixFingersTime)
 	go node.periodicCheckPredecessor(node.checkPredecessorTime)
 
-	fmt.Println("Waiting for periodic tasks to stabilize...")
 	// Sleep for a duration to allow periodic tasks to stabilize
 	time.Sleep(5 * time.Second) // Adjust the duration as needed
 }

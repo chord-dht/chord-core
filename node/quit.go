@@ -1,9 +1,5 @@
 package node
 
-import (
-	"os"
-)
-
 // Quit the node and do some cleaning work
 func (node *Node) Quit() {
 	// 1. stop the periodical tasks by closing the shutdown channel
@@ -13,9 +9,6 @@ func (node *Node) Quit() {
 	// we don't need to transfer the files to the successor,
 	// because we have the backup mechanism,
 	// the node's predecessor will send the files to the node's successors
-
-	// 3. invoke os.Exit(0) to exit the node
-	os.Exit(0)
 }
 
 // stop the periodical tasks by closing the shutdown channel

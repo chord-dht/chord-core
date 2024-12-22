@@ -4,7 +4,6 @@ import (
 	"crypto/tls"
 	"net"
 	"net/rpc"
-	"os"
 )
 
 // RPCHandler is the RPC handler for Chord node communication.
@@ -19,10 +18,10 @@ const RPCHandlerPrefix = "RPCHandler."
 //  1. registered as an RPC server.
 //  2. isten on the port specified in the node's Info.
 //  3. serve RPC requests in a separate goroutine.
-func (node *Node) startServer() {
+func (node *Node) startServer() error {
 	handler := new(RPCHandler)
 	if err := rpc.Register(handler); err != nil {
-		os.Exit(1)
+		return err
 	}
 
 	var listener net.Listener = nil
@@ -33,7 +32,7 @@ func (node *Node) startServer() {
 		listener, err = net.Listen("tcp", ":"+node.info.Port)
 	}
 	if err != nil {
-		os.Exit(1)
+		return err
 	}
 
 	go func() {
@@ -45,6 +44,8 @@ func (node *Node) startServer() {
 			go rpc.ServeConn(conn)
 		}
 	}()
+
+	return nil
 }
 
 // callRPC makes an RPC call to the node.
@@ -64,10 +65,7 @@ func (nodeInfo *NodeInfo) callRPC(method string, args interface{}, reply interfa
 	}
 
 	client := rpc.NewClient(conn)
-	defer func() {
-		if err := client.Close(); err != nil {
-		}
-	}()
+	defer client.Close()
 
 	if err := client.Call(rpcMethod, args, reply); err != nil {
 		return err

@@ -4,7 +4,6 @@ import (
 	"chord/storage"
 	"chord/tools"
 	"fmt"
-	"os"
 )
 
 // All r successors would have to simultaneously fail in order to disrupt the Chord ring,
@@ -74,9 +73,7 @@ func (node *Node) DeleteAllBackupFiles() error {
 	return nil
 }
 
-func (node *Node) GetSuccessorFiles() (storage.FileList, error) {
-	successor := node.GetFirstSuccessor()
-
+func (node *Node) GetSuccessorFiles(successor *NodeInfo) (storage.FileList, error) {
 	sFilesReply, err := successor.GetAllFiles()
 	if err != nil {
 		return nil, err
@@ -88,9 +85,7 @@ func (node *Node) GetSuccessorFiles() (storage.FileList, error) {
 	return sFileList, nil
 }
 
-func (node *Node) GetSuccessorBackupFiles() ([]storage.FileList, error) {
-	successor := node.GetFirstSuccessor()
-
+func (node *Node) GetSuccessorBackupFiles(successor *NodeInfo) ([]storage.FileList, error) {
 	sBackupFilesReply, err := successor.GetAllBackupFiles()
 	if err != nil {
 		return nil, err
@@ -114,8 +109,10 @@ func (node *Node) GetSuccessorBackupFiles() ([]storage.FileList, error) {
 func (node *Node) updateBackupFiles() error {
 	var finalErr error
 
+	successor := node.GetFirstSuccessor()
+
 	// 1. get successor[0]'s files
-	sFileList, err := node.GetSuccessorFiles()
+	sFileList, err := node.GetSuccessorFiles(successor)
 	if err != nil {
 		// if we can't get the successor[0]'s files, then we can't do the following steps
 		// and we need to clear all the backup files on the local disk, otherwise the backup files will be inconsistent with the successors
@@ -128,7 +125,7 @@ func (node *Node) updateBackupFiles() error {
 	var nFileLists []storage.FileList
 
 	// 2. get successor[0]'s all backup files
-	backupFileLists, err := node.GetSuccessorBackupFiles()
+	backupFileLists, err := node.GetSuccessorBackupFiles(successor)
 	if err != nil {
 		// if we can't get the successor[0]'s all backup files,
 		// we need to log it, and record the error,
@@ -175,10 +172,10 @@ func (node *Node) updateReplica() error {
 	// it will determine whether we need to send the old backup files to the new successor
 	// at the same time, we will find the first live successor
 	indexOfFirstLiveSuccessor, err := node.findFirstLiveSuccessor()
-	firstSuccessorIsDead := indexOfFirstLiveSuccessor != 0
 	if err != nil {
-		os.Exit(1) // all successors are dead, the node should exit
+		return err
 	}
+	firstSuccessorIsDead := indexOfFirstLiveSuccessor != 0
 
 	var oldBackupFileList storage.FileList
 	// if the first successor is dead, then we need to send the old backup files to the new successor, from 0 to indexOfFirstLiveSuccessor
