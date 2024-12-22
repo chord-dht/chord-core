@@ -167,14 +167,7 @@ func (node *Node) sendBackupFiles(oldBackupFileList storage.FileList) error {
 }
 
 // Update both successors and backup files of the node.
-func (node *Node) updateReplica() error {
-	// check if the first successor is alive or not
-	// it will determine whether we need to send the old backup files to the new successor
-	// at the same time, we will find the first live successor
-	indexOfFirstLiveSuccessor, err := node.findFirstLiveSuccessor()
-	if err != nil {
-		return err
-	}
+func (node *Node) updateReplica(indexOfFirstLiveSuccessor int) error {
 	firstSuccessorIsDead := indexOfFirstLiveSuccessor != 0
 
 	var oldBackupFileList storage.FileList

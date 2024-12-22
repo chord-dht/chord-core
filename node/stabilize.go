@@ -8,13 +8,16 @@ var next = 0
 
 // Periodic Background task - stabilize.
 func (node *Node) stabilize() {
+	// check if the first successor is alive or not
+	indexOfFirstLiveSuccessor, err := node.findFirstLiveSuccessor()
+	if err != nil {
+		node.Close()
+	}
 	// update the successor list and backup files
-	_ = node.updateReplica()
+	_ = node.updateReplica(indexOfFirstLiveSuccessor)
 
 	// successor.notify(n)
-	if node.GetFirstSuccessor().Notify(&node.info) != nil {
-		return
-	}
+	_ = node.GetFirstSuccessor().Notify(&node.info)
 }
 
 // Periodic Background task - fixFingers.

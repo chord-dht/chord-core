@@ -37,11 +37,17 @@ func (node *Node) startServer() error {
 
 	go func() {
 		for {
-			conn, err := listener.Accept()
-			if err != nil {
-				continue
+			select {
+			case <-node.shutdownCh:
+				listener.Close()
+				return
+			default:
+				conn, err := listener.Accept()
+				if err != nil {
+					continue
+				}
+				go rpc.ServeConn(conn)
 			}
-			go rpc.ServeConn(conn)
 		}
 	}()
 

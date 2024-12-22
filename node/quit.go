@@ -30,7 +30,11 @@ func (node *Node) notifyLeave() {
 func (node *Node) NotifySuccessorLeave() {
 	// for the node, its successor is leaving, this successor views the node as its predecessor
 	// this successor won't give any Information to the node, instead, the node will should update the successor list itself
-	_ = node.updateReplica()
+	indexOfFirstLiveSuccessor, err := node.findFirstLiveSuccessor()
+	if err != nil {
+		node.Close()
+	}
+	_ = node.updateReplica(indexOfFirstLiveSuccessor)
 }
 
 // NotifyPredecessorLeave : Notify the node that its predecessor is leaving
