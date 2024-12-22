@@ -8,26 +8,24 @@ import (
 )
 
 type NodeState struct {
-	info        NodeInfo
-	predecessor *NodeInfo
-	successors  NodeInfoList
-	fingerTable NodeInfoList
-	fingerIndex []*big.Int
-
-	localStorageName   []string
-	backupStoragesName [][]string
+	Info               NodeInfo     `json:"info"`
+	Predecessor        *NodeInfo    `json:"predecessor"`
+	Successors         NodeInfoList `json:"successors"`
+	FingerTable        NodeInfoList `json:"fingerTable"`
+	FingerIndex        []*big.Int   `json:"fingerIndex"`
+	LocalStorageName   []string     `json:"localStorageName"`
+	BackupStoragesName [][]string   `json:"backupStoragesName"`
 }
 
 func (node *Node) GetState() *NodeState {
 	return &NodeState{
-		info:        node.info,
-		predecessor: node.GetPredecessor(),
-		successors:  node.GetSuccessors(),
-		fingerTable: node.fingerTable,
-		fingerIndex: node.fingerIndex,
-
-		localStorageName:   node.GetFilesName(),
-		backupStoragesName: node.GetAllBackupFilesName(),
+		Info:               node.info,
+		Predecessor:        node.GetPredecessor(),
+		Successors:         node.GetSuccessors(),
+		FingerTable:        node.GetFingerTable(),
+		FingerIndex:        node.fingerIndex,
+		LocalStorageName:   node.GetFilesName(),
+		BackupStoragesName: node.GetAllBackupFilesName(),
 	}
 }
 
@@ -50,60 +48,47 @@ func printFile(filename string) {
 	fmt.Printf("Identifier: %s, filename: %s\n", tools.GenerateIdentifier(filename).String(), filename)
 }
 
-// Print the files' name in the node.
-func (node *Node) printFilesname() {
-	filesname := node.GetFilesName()
-	if len(filesname) == 0 {
-		fmt.Println("  No file in the storage")
-	}
-	for _, filename := range filesname {
-		fmt.Printf("  ")
-		printFile(filename)
-	}
-}
-
-// Print the backup files' name in one of the backup storages.
-func (node *Node) printBackupFilesname(index int) {
-	filesname := node.GetBackupFilesName(index)
-	if len(filesname) == 0 {
-		fmt.Printf("    No file in the backup storage %d\n", index)
-	}
-	for _, filename := range filesname {
-		fmt.Printf("    ")
-		printFile(filename)
-	}
-}
-
 // PrintState prints the state (all information) of the node.
-func (node *Node) PrintState() {
+func (nodeState *NodeState) PrintState() {
 	fmt.Println("Self:")
 	fmt.Printf("  ")
-	node.info.PrintInfo()
+	nodeState.Info.PrintInfo()
 
 	fmt.Println("Predecessor:")
 	fmt.Printf("  ")
-	node.GetPredecessor().PrintInfo()
+	nodeState.Predecessor.PrintInfo()
 
 	fmt.Println("Successors:")
-	for i := 0; i < node.successorsLength; i++ {
+	for i, successor := range nodeState.Successors {
 		fmt.Printf("  %d ", i)
-		node.GetSuccessor(i).PrintInfo()
+		successor.PrintInfo()
 	}
-
 	fmt.Println("Finger Table:")
-	for i := 0; i < node.identifierLength; i++ {
+	for i, finger := range nodeState.FingerTable {
 		fmt.Printf("  %d ", i)
-		fmt.Printf("Node %s + 2^%d = %s ", node.info.Identifier.String(), i, node.fingerIndex[i].String())
-		node.GetFingerEntry(i).PrintInfo()
+		fmt.Printf("Node %s + 2^%d = %s ", nodeState.Info.Identifier.String(), i, nodeState.FingerIndex[i].String())
+		finger.PrintInfo()
 	}
 
 	fmt.Println("Files:")
-	node.printFilesname()
+	if len(nodeState.LocalStorageName) == 0 {
+		fmt.Println("  No file in the storage")
+	}
+	for _, filename := range nodeState.LocalStorageName {
+		fmt.Printf("  ")
+		printFile(filename)
+	}
 
 	fmt.Println("Backup Files:")
-	for i := range node.backupStorages {
+	for i, backupStorageName := range nodeState.BackupStoragesName {
 		fmt.Printf("  %d: ", i)
-		node.successors[i].PrintInfo()
-		node.printBackupFilesname(i)
+		nodeState.Successors[i].PrintInfo()
+		if len(backupStorageName) == 0 {
+			fmt.Println("  No file in the storage")
+		}
+		for _, filename := range backupStorageName {
+			fmt.Printf("  ")
+			printFile(filename)
+		}
 	}
 }

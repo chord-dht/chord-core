@@ -79,4 +79,10 @@ func (node *Node) SetFingerEntry(index int, fingerEntry *NodeInfo) {
 	node.fingerTable[index] = fingerEntry
 }
 
-// We don't provide GetFingertable or SetFingertable method because we won't get or set the whole finger table at once.
+func (node *Node) GetFingerTable() NodeInfoList {
+	node.muFin.RLock()
+	defer node.muFin.RUnlock()
+	return node.fingerTable
+}
+
+// We don't provide SetFingertable method because we won't set the whole finger table at once.
