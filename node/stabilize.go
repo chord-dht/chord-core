@@ -12,8 +12,7 @@ func (node *Node) stabilize() {
 	_ = node.updateReplica()
 
 	// successor.notify(n)
-	successor := node.GetFirstSuccessor()
-	if err := successor.Notify(&node.info); err != nil {
+	if node.GetFirstSuccessor().Notify(&node.info) != nil {
 		return
 	}
 }
@@ -24,21 +23,12 @@ func (node *Node) fixFingers() {
 	if next > node.identifierLength-1 {
 		next = 0
 	}
-	// next \in [0, IdentifierLength-1]
-	// the meaning of next is like i, not the real next
-	// finger[next] = find_successor(n + 2^next)
-	// finger[0] = find_successor(n + 2^0)
-	// finger[1] = find_successor(n + 2^1)
-	// ...
-	// finger[IdentifierLength-1] = find_successor(n + 2^(IdentifierLength-1))
-	nextIdentifier := node.fingerIndex[next]
-
-	tempResult, err := node.info.FindSuccessorIter(nextIdentifier)
+	tempResult, err := node.info.FindSuccessorIter(node.fingerIndex[next])
 	if err != nil {
 		node.SetFingerEntry(next, NewNodeInfo())
 		return
 	}
-	if err := tempResult.LiveCheck(); err != nil {
+	if tempResult.LiveCheck() != nil {
 		node.SetFingerEntry(next, NewNodeInfo())
 		return
 	}
@@ -49,7 +39,7 @@ func (node *Node) fixFingers() {
 func (node *Node) checkPredecessor() {
 	oldPredecessor := node.GetPredecessor()
 
-	if err := oldPredecessor.LiveCheck(); err != nil {
+	if oldPredecessor.LiveCheck() != nil {
 		node.SetPredecessor(NewNodeInfo())
 		return
 	}
@@ -61,7 +51,7 @@ func (node *Node) Notify(nodeInfo *NodeInfo) {
 	// if oldPredecessor is nil or n' in (oldPredecessor, n)
 	if oldPredecessor.Empty() || tools.ModIntervalCheck(nodeInfo.Identifier, oldPredecessor.Identifier, node.info.Identifier, false, false) {
 		// before setting we need to check the nodeInfo
-		if err := nodeInfo.LiveCheck(); err != nil {
+		if nodeInfo.LiveCheck() != nil {
 			return
 		}
 		node.SetPredecessor(nodeInfo)
@@ -81,29 +71,23 @@ func (node *Node) transferFilesToPredecessor(oldPredecessor *NodeInfo) {
 		return
 	}
 
-	if oldPredecessor.Empty() || oldPredecessor.LiveCheck() != nil {
+	if oldPredecessor.LiveCheck() != nil {
 		// if the oldPredecessor is nil or not alive, then do nothing
 		return
 	}
 
 	// first extract the chosen files
-	extractFileList, err := node.ExtractFilesByFilter(func(filename string) bool {
+	extractFileList, _ := node.ExtractFilesByFilter(func(filename string) bool {
 		// if oldPredecessor is not nil, we select filename ID with (oldPredecessor, predecessor]
 		return tools.ModIntervalCheck(tools.GenerateIdentifier(filename), oldPredecessor.Identifier, predecessor.Identifier, false, true)
 	})
-	if err != nil {
-		// for this error, we don't need to return, we just log it and keep going on
-		// it means that we lost some files due to the storage system
-		// but we still need to keep on, as we need to send the rest of the files to the predecessor
-	}
 
 	// finally, we send the file list to the predecessor
 	reply, err := predecessor.StoreFiles(extractFileList)
 	if err != nil || !reply.Success {
 		// for this error, we need to store these files back to the node's storage system again
 		// so that when another notify comes, the node can transfer these files
-		if err := node.StoreFiles(extractFileList); err != nil {
-		}
+		_ = node.StoreFiles(extractFileList)
 		return
 	}
 }

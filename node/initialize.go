@@ -28,7 +28,6 @@ func (node *Node) Initialize(mode, joinAddress, joinPort string) {
 func (node *Node) create() {
 	// predecessor = nil
 	// successor = node itself
-
 	node.SetFirstSuccessor(&node.info)
 }
 

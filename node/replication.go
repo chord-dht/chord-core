@@ -29,13 +29,13 @@ func (node *Node) handleX() {
 	if err != nil {
 		return
 	}
-	if err := x.LiveCheck(); err != nil {
+
+	if x.LiveCheck() != nil {
 		return // it's ok if x is dead, we simply don't need to update the successor[0]!
 	}
 
 	if tools.ModIntervalCheck(x.Identifier, node.info.Identifier, successor.Identifier, false, false) {
 		node.SetFirstSuccessor(x)
-	} else {
 	}
 }
 
@@ -50,8 +50,7 @@ func (node *Node) updateSuccessors() error {
 	if err != nil {
 		return err
 	}
-	lenSSuccessors := len(sSuccessors)
-	if lenSSuccessors != node.successorsLength {
+	if len(sSuccessors) != node.successorsLength {
 		return fmt.Errorf("successor's successors is not equal to the node's SuccessorsLength")
 	}
 
@@ -151,7 +150,6 @@ func (node *Node) updateBackupFiles() error {
 	//  and then store the new backup files
 	if err := node.StoreBackupFiles(nFileLists); err != nil {
 		return err
-	} else {
 	}
 
 	return finalErr // here we return the finalErr, which is the error of getting the successor[0]'s all backup files
@@ -186,11 +184,7 @@ func (node *Node) updateReplica() error {
 	// if the first successor is dead, then we need to send the old backup files to the new successor, from 0 to indexOfFirstLiveSuccessor
 	if firstSuccessorIsDead {
 		// first we keep them for later use
-		var err error = nil
-		oldBackupFileList, err = node.GetBackupFilesUpToIndex(indexOfFirstLiveSuccessor)
-		if err != nil {
-		} else {
-		}
+		oldBackupFileList, _ = node.GetBackupFilesUpToIndex(indexOfFirstLiveSuccessor)
 	}
 
 	// now we have the successors[0] alive
@@ -202,12 +196,10 @@ func (node *Node) updateReplica() error {
 
 	// 1. if the first successor is dead, then we need to send these old backup files to the new successor
 	if firstSuccessorIsDead && oldBackupFileList != nil && len(oldBackupFileList) > 0 {
-		if err := node.sendBackupFiles(oldBackupFileList); err != nil {
+		if node.sendBackupFiles(oldBackupFileList) != nil {
 			// if this send call fails, then we need to store these old backup files to the node's storage
 			// so that the new successor can get them later through notifying (the node), and the node will send them again!
-			if err := node.StoreFiles(oldBackupFileList); err != nil {
-			}
-		} else {
+			_ = node.StoreFiles(oldBackupFileList)
 		}
 	}
 
@@ -218,13 +210,11 @@ func (node *Node) updateReplica() error {
 		// but if it happens, then the node's successor list will just remain the same (not updated)
 		// finally, we choose to return the error here, without doing updateBackupFiles()
 		return err
-	} else {
 	}
 
 	// 3. update backup files
 	if err := node.updateBackupFiles(); err != nil {
 		return err
-	} else {
 	}
 
 	return nil

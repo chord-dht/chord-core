@@ -2,7 +2,6 @@ package node
 
 import (
 	"crypto/tls"
-	"fmt"
 	"net"
 	"net/rpc"
 	"os"
@@ -23,7 +22,6 @@ const RPCHandlerPrefix = "RPCHandler."
 func (node *Node) startServer() {
 	handler := new(RPCHandler)
 	if err := rpc.Register(handler); err != nil {
-		fmt.Println("Failed to register RPC server:", err)
 		os.Exit(1)
 	}
 
@@ -35,10 +33,8 @@ func (node *Node) startServer() {
 		listener, err = net.Listen("tcp", ":"+node.info.Port)
 	}
 	if err != nil {
-		fmt.Printf("Worker %s failed to listen: %v\n", node.info.Port, err)
 		os.Exit(1)
 	}
-	fmt.Printf("Node %s listening on %s\n", node.info.Identifier.String(), node.info.Port)
 
 	go func() {
 		for {

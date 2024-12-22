@@ -46,7 +46,7 @@ func (node *Node) NotifyPredecessorLeave(predecessor *NodeInfo) {
 	// this predecessor will give its predecessor to the node, so the node can update its predecessor
 
 	// and we need to check the predecessor
-	if err := predecessor.LiveCheck(); err != nil {
+	if predecessor.LiveCheck() != nil {
 		return
 	}
 
