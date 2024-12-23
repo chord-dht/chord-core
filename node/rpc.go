@@ -13,11 +13,13 @@ type RPCHandler int
 const RPCHandlerPrefix = "RPCHandler."
 
 // startServer starts the rpc server for the node.
-// Use TLS if `node.TLSBool` is true, otherwise use normal TCP.
+// Use TLS if `node.tlsBool` is true, otherwise use normal TCP.
 // The RPCHandler will be:
 //  1. registered as an RPC server.
 //  2. isten on the port specified in the node's Info.
 //  3. serve RPC requests in a separate goroutine.
+//
+// The server will be closed when the node's shutdown channel is closed.
 func (node *Node) startServer() error {
 	handler := new(RPCHandler)
 	if err := rpc.Register(handler); err != nil {

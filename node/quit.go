@@ -9,6 +9,9 @@ func (node *Node) Quit() {
 	// we don't need to transfer the files to the successor,
 	// because we have the backup mechanism,
 	// the node's predecessor will send the files to the node's successors
+
+	// 3. Set the localNode to nil
+	localNode = nil
 }
 
 // stop the periodical tasks by closing the shutdown channel
@@ -26,9 +29,22 @@ func (node *Node) Close() {
 func (node *Node) notifyLeave() {
 	// The method below don't have return value
 	// notify the predecessor to update its successor list
-	node.GetPredecessor().NotifyPredecessor()
+	predecessor := node.GetPredecessor()
+	if predecessor == &node.info {
+		// if the predecessor is the node itself, then we don't need to notify it
+		// because the node itself will be closed soon
+	} else {
+		predecessor.NotifyPredecessor()
+	}
+
 	// notify the successor to update its predecessor, you can send your predecessor to it
-	node.GetFirstSuccessor().NotifySuccessor(node.GetPredecessor())
+	successor := node.GetFirstSuccessor()
+	if successor == &node.info {
+		// if the successor is the node itself, then we don't need to notify it
+		// because the node itself will be closed soon
+	} else {
+		successor.NotifySuccessor(node.GetPredecessor())
+	}
 }
 
 // NotifySuccessorLeave : Notify the node that its successor is leaving
