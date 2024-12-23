@@ -30,7 +30,7 @@ func (node *Node) notifyLeave() {
 	// The method below don't have return value
 	// notify the predecessor to update its successor list
 	predecessor := node.GetPredecessor()
-	if predecessor.Identifier == node.info.Identifier {
+	if InfoEqual(predecessor, &node.info) {
 		// if the predecessor is the node itself, then we don't need to notify it
 		// because the node itself will be closed soon
 	} else {
@@ -39,7 +39,7 @@ func (node *Node) notifyLeave() {
 
 	// notify the successor to update its predecessor, you can send your predecessor to it
 	successor := node.GetFirstSuccessor()
-	if successor.Identifier == node.info.Identifier {
+	if InfoEqual(successor, &node.info) {
 		// if the successor is the node itself, then we don't need to notify it
 		// because the node itself will be closed soon
 	} else {

@@ -47,6 +47,15 @@ func (nodeInfo *NodeInfo) Empty() bool {
 	return b1 || b2 || b3
 }
 
+// Check if two NodeInfo are equal, the equality is defined by the identifier or the network address
+// If the identifier is equal, then the two NodeInfo are equal
+// If the network address is equal, then the two NodeInfo are equal
+func InfoEqual(nodeInfo1 *NodeInfo, nodeInfo2 *NodeInfo) bool {
+	idBool := nodeInfo1.Identifier.Cmp(nodeInfo2.Identifier) == 0
+	addressBool := nodeInfo1.IpAddress == nodeInfo2.IpAddress && nodeInfo1.Port == nodeInfo2.Port
+	return idBool || addressBool
+}
+
 /*                             NodeInfo Part                             */
 
 /*                             Node Part                             */
