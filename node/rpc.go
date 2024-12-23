@@ -39,18 +39,25 @@ func (node *Node) startServer() error {
 
 	go func() {
 		for {
-			select {
-			case <-node.shutdownCh:
-				listener.Close()
-				return
-			default:
-				conn, err := listener.Accept()
-				if err != nil {
+			conn, err := listener.Accept()
+			if err != nil {
+				select {
+				case <-node.shutdownCh:
+					// the reason could be the listener is closed
+					// in this case, we just return to end the goroutine
+					return
+				default:
 					continue
 				}
-				go rpc.ServeConn(conn)
 			}
+			go rpc.ServeConn(conn)
 		}
+	}()
+
+	go func() {
+		// wait for the shutdown signal, once received, close the listener
+		<-node.shutdownCh // this goroutine will be blocked here for a long time
+		listener.Close()
 	}()
 
 	return nil
