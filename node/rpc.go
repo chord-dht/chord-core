@@ -2,6 +2,7 @@ package node
 
 import (
 	"crypto/tls"
+	"log"
 	"net"
 	"net/rpc"
 )
@@ -12,6 +13,15 @@ type RPCHandler int
 
 const RPCHandlerPrefix = "RPCHandler."
 
+// init registers the RPCHandler as an RPC server.
+// You shouldn't register the handler twice, otherwise, an error will be thrown.
+func init() {
+	handler := new(RPCHandler)
+	if err := rpc.Register(handler); err != nil {
+		log.Fatalf("%v", err)
+	}
+}
+
 // startServer starts the rpc server for the node.
 // Use TLS if `node.tlsBool` is true, otherwise use normal TCP.
 // The RPCHandler will be:
@@ -21,11 +31,6 @@ const RPCHandlerPrefix = "RPCHandler."
 //
 // The server will be closed when the node's shutdown channel is closed.
 func (node *Node) startServer() error {
-	handler := new(RPCHandler)
-	if err := rpc.Register(handler); err != nil {
-		return err
-	}
-
 	var listener net.Listener = nil
 	var err error = nil
 	if node.tlsBool {
